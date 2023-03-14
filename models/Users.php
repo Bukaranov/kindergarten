@@ -19,6 +19,7 @@ use yii\web\IdentityInterface;
 class Users extends \yii\db\ActiveRecord implements IdentityInterface
 {
     const ADMIN = 1;
+    const PARENT = 2;
 
     /**
      * {@inheritdoc}
@@ -119,6 +120,11 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface
     public function getIsAdmin()
     {
         return $this->role == self::ADMIN;
+    }
+
+    public function getIsParent()
+    {
+        return $this->role == self::PARENT;
     }
 
 }

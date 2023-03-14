@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Kindergartens;
 use app\models\Requests;
 use app\models\RequestsSearch;
+use app\models\Users;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\debug\models\timeline\DataProvider;
@@ -27,12 +28,23 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout'],
                 'rules' => [
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['index', 'login', 'signup'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['?']  // Тільки не автентифіковані користувачі можуть отримати доступ до цих дій
+                    ],
+                    [
+                        'actions' => ['index','index-users', 'index', 'create-request', 'my-requests', 'delete-request'],
+                        'allow' => true,
+                        'roles' => ['@'], // Лише автентифіковані користувачі можуть отримати доступ до цих дій
+                    ],
+                    [
+                        'actions' => ['index-users', 'update', 'delete', 'editor'],
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            return !Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin;
+                        } // Тільки адміністрація може отримати доступ до цих дій
                     ],
                 ],
             ],
@@ -68,13 +80,15 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-//        $command = Yii::$app->db->createCommand('SELECT * FROM users');
-//        $posts = $command->queryAll();
-//        echo '<pre>';
-//        var_dump($posts);die;
-        return $this->render('index');
+        $filePath = Yii::getAlias('@webroot') . '/files/file.txt'; // путь к файлу с текстом
+        $text = file_get_contents($filePath);
+        return $this->render('index', ['text' => $text]);
     }
 
+    public function actionIndexUsers()
+    {
+        return $this->render('index-users');
+    }
     /**
      * @return string|\yii\web\Response
      */
@@ -88,7 +102,7 @@ class SiteController extends Controller
                 $model->status = Requests::NEW_REQ;
                 if ($model->validate()) {
                     $model->save();
-                    return $this->goHome();
+                    return $this->redirect('my-requests');
                 }
             }
         } else {
@@ -106,6 +120,7 @@ class SiteController extends Controller
      *
      * @return string
      */
+    // Заявки пользователя
     public function actionMyRequests()
     {
         $user = Yii::$app->user->identity;
@@ -136,7 +151,7 @@ class SiteController extends Controller
     {
         $this->findModel($id)->delete();
 
-        return $this->goBack();
+        return $this->redirect('my-requests');
     }
 
     protected function findModel($id)
@@ -186,7 +201,7 @@ class SiteController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->save()) {
-                Yii::$app->session->setFlash('success', "Данные успешно сохранены!");
+                Yii::$app->session->setFlash('success', "Дані успішно збережені!");
             }
         }
 
@@ -206,5 +221,18 @@ class SiteController extends Controller
         } else {
           return $this->render('entry', ['model' => $model]);
         }
+    }
+
+    public function actionEditor()
+    {
+        $filePath = Yii::getAlias('@webroot') . '/files/file.txt'; // путь к файлу с текстом
+        $text = file_get_contents($filePath); // загрузка текста из файла
+        if (Yii::$app->request->isPost) {
+            $text = Yii::$app->request->post('text'); // получение текста из POST-запроса
+            file_put_contents($filePath, $text); // сохранение текста в файл
+            Yii::$app->session->setFlash('success', 'Текст збережено!'); // установка флеш-сообщения
+        }
+        return $this->render('editor', ['text' => $text]);
+//        return $this->render('index', ['text' => $text]);
     }
 }

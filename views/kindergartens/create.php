@@ -6,7 +6,7 @@ use yii\helpers\Html;
 /** @var app\models\Kindergartens $model */
 
 $this->title = 'Створити дитячі садки';
-$this->params['breadcrumbs'][] = ['label' => 'Kindergartens', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Дитячі садки', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="kindergartens-create">

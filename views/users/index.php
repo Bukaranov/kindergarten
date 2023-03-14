@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'user_id',
             'full_name',
             'login',
-            'password',
+//            'password',
 //            'role',
             [
                 'attribute' => 'role',
@@ -43,11 +43,19 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
             ],
             [
-                'class' => ActionColumn::className(),
+                'class' => 'yii\grid\ActionColumn', 'template' => '{delete} {update}',
                 'urlCreator' => function ($action, Users $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'user_id' => $model->user_id]);
-                 }
+                return Url::toRoute([$action, 'user_id' => $model->user_id]);
+                }
             ],
+
+//            [
+//                'class' => ActionColumn::className(),
+////                'icons' = 'delete',
+//                'urlCreator' => function ($action, Users $model, $key, $index, $column) {
+//                    return Url::toRoute([$action, 'user_id' => $model->user_id]);
+//                 }
+//            ],
         ],
     ]); ?>
 

@@ -64,7 +64,8 @@ class Kindergartens extends \yii\db\ActiveRecord
      */
     public function getRequestsCount()
     {
-//        $query = Requests::find()->where(['kindergarten_id' => $this->kindergarten_id]);
+        // $query = Requests::find()->where(['kindergarten_id' => $this->kindergarten_id]);
+        // Одно и тоже
         $query = $this->getRequests();
 
         return $query->andWhere([

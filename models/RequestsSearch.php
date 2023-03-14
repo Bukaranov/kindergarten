@@ -11,6 +11,7 @@ use app\models\Requests;
  */
 class RequestsSearch extends Requests
 {
+    public $user_name;
     /**
      * {@inheritdoc}
      */
@@ -18,7 +19,7 @@ class RequestsSearch extends Requests
     {
         return [
             [['id', 'kindergarten_id', 'user_id', 'status'], 'integer'],
-            [['child_name', 'birth_date', 'reason', 'created_at'], 'safe'],
+            [['child_name', 'birth_date', 'reason', 'created_at', 'user_name'], 'safe'],
         ];
     }
 
@@ -41,7 +42,7 @@ class RequestsSearch extends Requests
     public function search($params)
     {
         $query = Requests::find();
-
+        $query->joinWith(['user']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
@@ -49,6 +50,13 @@ class RequestsSearch extends Requests
         ]);
 
         $this->load($params);
+
+        $dataProvider->sort->attributes['user_name'] = [
+            // The tables are the ones our relation are configured to
+            // in my case they are prefixed with "tbl_"
+            'asc' => ['users.full_name' => SORT_ASC],
+            'desc' => ['users.full_name' => SORT_DESC],
+        ];
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
@@ -60,14 +68,15 @@ class RequestsSearch extends Requests
         $query->andFilterWhere([
             'id' => $this->id,
             'kindergarten_id' => $this->kindergarten_id,
-            'user_id' => $this->user_id,
+//            'user_id' => $this->user_id,
             'status' => $this->status,
             'created_at' => $this->created_at,
         ]);
 
         $query->andFilterWhere(['like', 'child_name', $this->child_name])
             ->andFilterWhere(['like', 'reason', $this->reason])
-            ->andFilterWhere(['like', 'birth_date', $this->birth_date]);
+            ->andFilterWhere(['like', 'birth_date', $this->birth_date])
+            ->andFilterWhere(['like', 'users.full_name', $this->user_name]);
 
         return $dataProvider;
     }

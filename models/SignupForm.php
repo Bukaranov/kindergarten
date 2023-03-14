@@ -37,7 +37,7 @@ class SignupForm extends Model
         if ($this->validate()) {
             $user = new Users;
             $user->attributes = $this->attributes;
-            $user->role = 1;
+            $user->role = 2;
             return $user->save();
         }
     }

@@ -7,6 +7,7 @@ use app\models\Requests;
 use app\models\RequestsSearch;
 use app\models\Users;
 use Yii;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -21,17 +22,26 @@ class RequestsController extends Controller
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['index', 'view', 'accept', 'refusal', 'create', 'delete'],
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            return !Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin;
+                        } // Тільки адміністрація може отримати доступ до цих дій
                     ],
                 ],
-            ]
-        );
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'logout' => ['post'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -88,35 +98,6 @@ class RequestsController extends Controller
     }
 
     /**
-     * Updates an existing Requests model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @param int $kindergarten_id Kindergarten ID
-     * @param int $user_id User ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
-        $kindergarten = $model->kindergarten;
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->validate()) {
-                $model->save();
-            }
-            if ($kindergarten->requestsCount >= $kindergarten->capacity) {
-                // всем заявкам в садики делаем статус отказано и причину отказа
-            }
-            $this->redirect(['view', 'id' => $model->id]);
-        }
-
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
      * Deletes an existing Requests model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
@@ -150,19 +131,26 @@ class RequestsController extends Controller
     {
         $model = $this->findModel($id);
         $model->status = 2;
-        $model->save();
-        $kindergarten = $model->kindergarten;
-        if ($kindergarten->isNoPlace()) {
-            // всем заявкам в садики делаем статус отказано и причину отказа
-            $requests = Requests::find()->where('status = 1')->all();
-            foreach ($requests as $requestModel) {
-                $requestModel->status = 3;
-                $requestModel->reason = "Не залишилося місць";
-                $requestModel->update(false);
+        $model->reason = null;
+        if ($model->save()) {
+            Yii::$app->session->setFlash('success', "Заяву прийнято");
+            $kindergarten = $model->kindergarten;
+            if ($kindergarten->isNoPlace()) {
+                // всем заявкам в садики делаем статус отказано и причину отказа
+                $requests = Requests::find()->where('status = 1')->all();
+                foreach ($requests as $requestModel) {
+                    $requestModel->status = 3;
+                    $requestModel->reason = "Не залишилося місць";
+                    $requestModel->update(false);
+                }
+            }
+        } else {
+            foreach ($model->errors as $err) {
+                Yii::$app->session->setFlash('error', $err);
             }
         }
 
-        return $this->redirect(['view', 'id' => $model->id]);
+        return $this->redirect(['index']);
     }
 
     /**

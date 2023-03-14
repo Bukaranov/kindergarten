@@ -4,6 +4,7 @@
 /** @var string $content */
 
 use app\assets\AppAsset;
+use app\models\Users;
 use app\widgets\Alert;
 use yii\widgets\Breadcrumbs;
 use yii\bootstrap\Html;
@@ -27,17 +28,31 @@ AppAsset::register($this);
 
 <header>
     <?php
-    NavBar::begin([
-        'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
-        'options' => [
-            'class' => 'navbar navbar-default',
-        ],
-    ]);
+    NavBar::begin();
+//    [
+//        'brandLabel' => Yii::$app->name,
+//        'brandUrl' => Yii::$app->homeUrl,
+//        'options' => [
+//            'class' => 'navbar navbar-default',
+//        ],
+//    ]
     echo Nav::widget([
         'options' => ['class' => 'nav navbar-nav'],
         'items' => [
-//            ['label' => 'Home', 'url' => ['/site/index']],
+            [
+                'label' => 'Додому',
+                'url' => ['/site/index'],
+            ],
+            [
+                'label' => 'Заявки',
+                'url' => ['/site/index-users'],
+                'visible' => !Yii::$app->user->isGuest && Yii::$app->user->identity->isParent
+            ],
+            [
+                'label' => 'Редактор',
+                'url' => ['/site/editor'],
+                'visible' => !Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin
+            ],
             [
                 'label' => 'Дитячі садки',
                 'url' => ['/kindergartens/index'],

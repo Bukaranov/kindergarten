@@ -18,12 +18,16 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Прийняти', ['accept', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::button('Відмовити', [
-            'class' => 'btn btn-danger',
-            'data-toggle' => 'modal',
-            'data-target' => '#myModal',
-        ]) ?>
+        <?php if ($model->status != 2) {
+            echo Html::a('Прийняти', ['accept', 'id' => $model->id], ['class' => 'btn btn-primary']);
+        } ?>
+        <?php if ($model->status != 3) {
+            echo Html::button('Відмовити', [
+                'class' => 'btn btn-danger',
+                'data-toggle' => 'modal',
+                'data-target' => '#myModal',
+            ]);
+        }?>
     </p>
 
     <?= DetailView::widget([

@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use DateTime;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
@@ -64,6 +65,13 @@ class Requests extends \yii\db\ActiveRecord
             [['child_name'], 'string', 'max' => 255],
             ['birth_date', 'date', 'format' => 'php:Y-m-d'],
             ['birth_date', 'validateAge'],
+            ['child_name', 'unique',
+                'targetAttribute' => ['child_name', 'birth_date', 'kindergarten_id'],
+                'filter' => function ($query) {
+                    return $query->andWhere(['!=', 'status', 3]);
+                },
+                'message' => 'Заява на цю дитину вже існує'
+            ],
 //            ['kindergarten_id', 'validateChild'],
             [['kindergarten_id'], 'exist', 'skipOnError' => true, 'targetClass' => Kindergartens::class, 'targetAttribute' => ['kindergarten_id' => 'kindergarten_id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Users::class, 'targetAttribute' => ['user_id' => 'user_id']],
@@ -81,18 +89,23 @@ class Requests extends \yii\db\ActiveRecord
         $birthDate = \DateTime::createFromFormat('Y-m-d', $this->birth_date);
         $ageInterval = $now->diff($birthDate);
         $ageInYears = $ageInterval->y;
-
+//        var_dump($ageInYears);die;
         if ($ageInYears > $maxAgeInYears) {
             $this->addError( $attribute,'Возраст ребенка не соответствует требованиям');
         }
 
     }
 
-    public function validateChild($attribute, $params, $validator)
+    public function validateAge2($attribute, $params, $validator)
     {
-        // параметры для запроса в бд
-        // 'child_name', 'birth_date', 'kindergarten_id'б 'status' (1 или 3)
-        //  $this->addError( $attribute,'Вы уже подали заявку в этот садик');
+        $birthday = new DateTime($this->birth_date);
+        $now = new \DateTime();
+        $diff = $birthday->diff($now);
+        var_dump($diff->y);die;
+        if ($diff->y > 5) {
+            $this->addError( $attribute,'Возраст ребенка не соответствует требованиям');
+        }
+
     }
 
     /**
@@ -104,12 +117,12 @@ class Requests extends \yii\db\ActiveRecord
             'id' => 'ID',
             'child_name' => 'ПІБ дитини',
             'birth_date' => 'Дата народження',
-            'kindergarten_id' => 'Kindergarten ID',
+            'kindergarten_id' => 'Дитячий садок',
             'user_id' => 'ID користувача',
             'status' => 'Статус',
             'reason' => 'Причина',
             'created_at' => 'Дата, час подачі',
-//            'kindergarten' => 'Назва садка'
+            'kindergarten' => 'Назва садка'
         ];
     }
 
@@ -138,11 +151,19 @@ class Requests extends \yii\db\ActiveRecord
         return $this->hasOne(Requests::class, ['reason' => 'reason']);
     }
 
+    /**
+     *
+     * @return string
+     */
     public function getStatusName()
     {
         return $this->statusArr[$this->status];
     }
 
+    /**
+     *
+     * @return int
+     */
     public function getPreviousCount()
     {
         $count = Requests::find()
@@ -154,6 +175,8 @@ class Requests extends \yii\db\ActiveRecord
                 '<', 'id', $this->id
             ])
             ->count();
+
         return $count;
     }
+
 }

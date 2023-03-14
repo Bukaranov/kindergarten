@@ -20,16 +20,22 @@ class KindergartensController extends Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::class,
-                'only' => ['index', 'view'],
+                //Ограничения доступа
+                'class' => AccessControl::className(),
                 'rules' => [
                     [
+                        'actions' => ['index', 'create', 'view', 'update', 'delete', 'set-requests'],
                         'allow' => true,
-                        'actions' => ['index', 'view'],
                         'matchCallback' => function ($rule, $action) {
                             return !Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin;
-                        }
+                        } // Тільки адміністрація може отримати доступ до цих дій
                     ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'logout' => ['post'],
                 ],
             ],
         ];
@@ -50,16 +56,6 @@ class KindergartensController extends Controller
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
-        ]);
-    }
-
-    public function actionIndex2()
-    {
-        $models = Kindergartens::find()
-            ->all();
-
-        return $this->render('new-index', [
-            'models' => $models
         ]);
     }
 

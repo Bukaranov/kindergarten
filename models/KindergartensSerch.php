@@ -27,7 +27,7 @@ class KindergartensSerch extends Kindergartens
      */
     public function scenarios()
     {
-        // bypass scenarios() implementation in the parent class
+        // обійти реалізацію scenarios() у батьківському класі
         return Model::scenarios();
     }
 
@@ -41,17 +41,10 @@ class KindergartensSerch extends Kindergartens
     public function search($params)
     {
         $query = Kindergartens::find();
-
-        // add conditions that should always apply here
-
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
-
         $this->load($params);
-
-
-        // grid filtering conditions
         $query->andFilterWhere([
             'capacity' => $this->capacity,
         ]);

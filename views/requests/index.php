@@ -17,10 +17,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-<!--    <p>-->
-<!--        --><?//= Html::a('Create Requests', ['create'], ['class' => 'btn btn-success']) ?>
-<!--    </p>-->
-
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
@@ -43,14 +39,17 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'birth_date',
                 'format' => ['date', 'php:d.m.Y']
             ],
-            'kindergarten.name',
-//            [
-//                'attribute' => 'kindergarten',
-//                'value' => function ($model) {
-//                    return $model->kindergarten->name;
-//                },
-//            ],
-            'user.full_name',
+            [
+                'attribute' => 'kindergarten_id',
+                'filter' => \app\models\Kindergartens::getList(),
+                'value' => 'kindergarten.name',
+            ],
+            [
+                'attribute' => 'user_name',
+                'label' => 'Повне ім\'я',
+                'value' => 'user.full_name',
+            ],
+//            'user.full_name',
             [
                 'attribute' => 'status',
                 'filter' => $searchModel->statusArr,

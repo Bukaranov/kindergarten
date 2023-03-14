@@ -52,8 +52,6 @@ class RequestsSearch extends Requests
         $this->load($params);
 
         $dataProvider->sort->attributes['user_name'] = [
-            // The tables are the ones our relation are configured to
-            // in my case they are prefixed with "tbl_"
             'asc' => ['users.full_name' => SORT_ASC],
             'desc' => ['users.full_name' => SORT_DESC],
         ];

@@ -11,6 +11,7 @@ use app\models\Users;
  */
 class UsersSearch extends Users
 {
+
     /**
      * {@inheritdoc}
      */
